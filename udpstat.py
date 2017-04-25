@@ -1,11 +1,8 @@
 #!/usr/bin/python
-# vim: sts=4 ts=8 et ai
-
-''' UDP buffer size (RX, TX) and dropped packages statistics program, written by PZolee (pzoleex @ freemail.hu), 2012'''
 
 import signal
 import time
-from re import search
+import re
 from optparse import OptionParser
 from datetime import datetime
 from sys import exit
@@ -35,7 +32,7 @@ udp_input = '/proc/net/udp'
 '''
 
 usage = "usage: %prog [options] port"
-desc = "UDP buffer size (RX, TX) and dropped packages statistics program, written by PZolee (pzoleex @ freemail.hu), 2012"
+desc = "UDP buffer size (RX, TX) and dropped packages statistics program, originally written by PZolee (pzoleex @ freemail.hu), 2012"
 parser = OptionParser(usage, description = desc, version = "%prog version: 1.0")
 parser.add_option("-o", "--output", dest="filename", help="The name of the output file", metavar = "<filename>")
 parser.add_option("-r", "--rx", help="Measure the size of RX(incoming) buffer", action="store_true", dest="rx", default=False)
@@ -95,16 +92,16 @@ while stime >= atime - opts.runtime:
     lines = f.readlines()
     f.close()
     for item in lines:
-        if search(hexport, item) != None:
+        if re.search(hexport, item, flags=re.I) != None:
             buffers = item.strip().split() # 0:sl, 1:local_address, 2:rem_address, 3:st, 4:tx_queue rx_queue, 5:tr tm->when retrnsmt
                                            # 6:retrnsmt, 7:uid, 8:timeout, 9:inode, 10:ref, 11:pointer, 12:drops
             sl, la, ra, st, tx_rx, tr, retrnsmt, uid, timeout, inode, ref, pointer, drops = buffers
-            if opts.listened == 'local' and search(la.split(':')[1], hexport) == None:
+            if opts.listened == 'local' and re.search(la.split(':')[1], hexport, flags=re.I) == None:
                 # The local port does not match to the given local port
                 print "There is no matching port yet"
                 time.sleep(opts.freq)
                 continue
-            if opts.listened == 'remote' and search(ra.split(':')[1], hexport) == None:
+            if opts.listened == 'remote' and re.search(ra.split(':')[1], hexport, flags=re.I) == None:
                 # The remote port does not match to the given remote port
                 print "There is no matching port yet"
                 time.sleep(opts.freq)
